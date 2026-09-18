@@ -1,16 +1,6 @@
----
-title: Multi-Step Research Assistant
-emoji: 🔎
-colorFrom: green
-colorTo: gray
-sdk: docker
-app_port: 8000
-pinned: false
----
-
 # Multi-Step Research Assistant
 
-Deployment link: https://autom8ai-research-assistant.onrender.com/
+**Live demo: <https://autom8ai-research-assistant.onrender.com/>** · [API docs](https://autom8ai-research-assistant.onrender.com/docs) · [health](https://autom8ai-research-assistant.onrender.com/health)
 
 A research assistant over a private document knowledge base. It plans, retrieves, checks its own
 evidence, searches the web when the documents fall short, writes a cited answer, and then fact-checks
@@ -20,6 +10,20 @@ small test UI.
 Everything runs on free tiers or locally: **Groq** for inference (free API key), **FastEmbed** ONNX
 embeddings on CPU (no key), **Qdrant** embedded on disk (no server), **DuckDuckGo** or Tavily for web
 fallback, **Tesseract** for OCR.
+
+> **Before you click the demo:** it runs on a free Render instance that sleeps after 15 minutes of
+> inactivity, so the first page load can take up to a minute while the container wakes. A question
+> takes 20-60 seconds - the assistant makes several LLM calls and shows each reasoning step as it
+> happens. The eight sample documents are baked into the image; documents you upload live only until
+> the instance restarts.
+
+Good first question to try, because no single passage answers it:
+
+> The annual report names a single-sourced supplier for the Atlas lidar. Which company is that, where
+> is it based, and when does its contract end?
+
+Then ask the same thing with **Ask with naive retrieval** to see what a single retrieve-and-generate
+pass does with it.
 
 ---
 
@@ -33,7 +37,7 @@ fallback, **Tesseract** for OCR.
 - [Sample knowledge base](#sample-knowledge-base)
 - [Evaluation](#evaluation)
 - [Tests](#tests)
-- [Deploying for free](#deploying-for-free)
+- [Deployment](#deployment)
 - [Configuration](#configuration)
 - [Project layout](#project-layout)
 - [Limitations](#limitations)
@@ -66,12 +70,18 @@ Open <http://localhost:8000> for the test UI, or <http://localhost:8000/docs> fo
 On first start the app downloads the embedding models (~70 MB) and ingests `data/corpus/` into the
 vector store. `GET /health` shows progress in the `seeding` field; the UI shows it in the sidebar.
 
-Docker:
+Docker (this is what the deployed instance runs):
 
 ```bash
 docker build -t research-assistant .
-docker run -p 8000:8000 -e GROQ_API_KEY=gsk_... research-assistant
+docker run -p 8000:8000 -e GROQ_API_KEY=gsk_... -e SEED_ON_STARTUP=false research-assistant
 ```
+
+The image downloads the embedding models **and ingests `data/corpus/` at build time**, so the
+container starts with a populated vector store and needs no parsing, OCR or model download at
+runtime. That is why `SEED_ON_STARTUP=false` is set above; leaving it `true` is harmless (the app
+skips seeding when the collection already has documents) but the explicit setting makes the intent
+obvious in a deployment.
 
 Ask something that no single passage answers:
 
@@ -214,6 +224,8 @@ verified; if the knowledge base search fails the trace says so. One broken step 
 | `GET` | `/conversations/{id}` | Turns stored for a conversation |
 | `DELETE` | `/conversations/{id}` | Forget a conversation |
 
+Interactive docs are at `/docs` (Swagger) and `/redoc`, with the raw schema at `/openapi.json`.
+
 Add documents:
 
 ```bash
@@ -311,6 +323,10 @@ questions whose facts live in two documents, where a 2025 memo overrides the 202
 is only in a scanned page that retrieval must reach through OCR, or where the honest answer is "not in these
 documents". The agent pays for that with roughly 5-10 LLM calls and tens of seconds per question.
 
+Point `--base-url` at the deployed instance if you want, but the free tier's fractional CPU and Groq's
+per-minute token limits make a full run slow; running it locally is faster and does not compete with anyone
+using the demo.
+
 ---
 
 ## Tests
@@ -329,23 +345,54 @@ degradation when the LLM fails, and streaming.
 
 ---
 
-## Deploying for free
+## Deployment
 
-The container is stateless apart from `storage/` and `models/`, so anywhere that runs a Dockerfile works.
+The live demo runs on **Render's free tier**, built from this repository's `Dockerfile` and redeployed on
+every push to `main`. The only secret it needs is `GROQ_API_KEY`.
 
-- **Hugging Face Spaces** (Docker SDK): push the repo, set `GROQ_API_KEY` as a secret, and expose port 8000.
-  The image already downloads the embedding models at build time and runs as uid 1000.
-- **Render / Railway / Fly.io** free plans: build from the Dockerfile, set `GROQ_API_KEY`, one instance only.
-- For persistence across redeploys, create a free Qdrant Cloud cluster and set `QDRANT_URL` and
-  `QDRANT_API_KEY`; the app switches from embedded to cloud automatically and creates the payload index it
-  needs.
+**How the image is built.** Two build-time steps do the slow work once, so the container starts ready:
+the FastEmbed models are downloaded, and then the sample corpus is parsed, OCR'd, embedded and written into
+the embedded Qdrant store inside the image:
 
-Run a single worker: the embedded Qdrant store is single-process and conversation memory lives in the process.
+```dockerfile
+RUN python -c "from app.vectorstore import get_kb; from app.ingestion.pipeline import seed_directory; \
+kb = get_kb(); \
+[print(r.status, r.source, r.chunks, r.error or '') for r in seed_directory(kb, 'data/corpus')]; \
+print('chunks in collection:', kb.count())"
+```
 
-Free-tier limits worth knowing (Groq, per model, per organisation): 30 requests/minute, 1,000 requests/day,
-8K tokens/minute and 200K tokens/day for `gpt-oss-120b`. A question costs several calls, so heavy use will hit
-the per-minute token ceiling; the fallback model lists exist to absorb that, and `PASSAGE_CHARS`,
-`MAX_CANDIDATES`, `MAX_SUB_QUESTIONS` and `RETRIEVAL_K` are the knobs for spending fewer tokens.
+Neither step needs an API key: ingestion is parsing plus local embeddings, with no LLM involved. The trade-off
+is that the knowledge base is fixed at build time - anything uploaded to the running instance disappears when
+it restarts, because Render's free tier has no persistent disk.
+
+**Environment variables on Render:**
+
+| Key | Value | Why |
+|---|---|---|
+| `GROQ_API_KEY` | `gsk_...` | The only required secret |
+| `SEED_ON_STARTUP` | `false` | The corpus is already in the image |
+| `OMP_NUM_THREADS` | `1` | Stops onnxruntime spawning a thread per core - pointless on a fractional CPU and costly in RAM |
+| `MALLOC_ARENA_MAX` | `2` | Caps glibc's per-thread heap arenas |
+| `TOKENIZERS_PARALLELISM` | `false` | Silences the tokenizer fork warning |
+
+Service settings: Docker runtime, free instance, health check path `/health`, no start command (the Dockerfile
+reads Render's injected `$PORT` and runs a single worker - the embedded store is single-process and
+conversation memory lives in the process).
+
+**Free-tier behaviour to expect:** 512 MB RAM and a fractional CPU, sleep after 15 idle minutes with a slow
+first request afterwards, and no persistent disk. Memory is the binding constraint - onnxruntime plus the
+embedding model is most of the budget, which is why the tuning variables above are set.
+
+**Other targets.** Hugging Face Spaces is no longer an option on a free account: Docker and Gradio Spaces now
+require a paid plan (only static Spaces remain free). For more headroom, the same image runs on Google Cloud
+Run with `--memory 2Gi` inside its always-free monthly allowance, or on any VM. For a knowledge base that
+survives restarts and accepts uploads, create a free Qdrant Cloud cluster and set `QDRANT_URL` and
+`QDRANT_API_KEY`; the app switches from embedded to cloud automatically and creates the payload index it needs.
+
+**Groq free-tier limits** (per model, per organisation): 30 requests/minute, 1,000 requests/day, 8K tokens/minute
+and 200K tokens/day for `gpt-oss-120b`. One question costs several calls, so sustained use hits the per-minute
+token ceiling first; the fallback model lists absorb that, and `PASSAGE_CHARS`, `MAX_CANDIDATES`,
+`MAX_SUB_QUESTIONS` and `RETRIEVAL_K` are the knobs for spending fewer tokens.
 
 ---
 
@@ -390,6 +437,7 @@ data/corpus/            Sample knowledge base (8 formats)
 scripts/generate_corpus.py
 eval/                   Question set + agent vs naive runner
 tests/                  Offline test suite
+Dockerfile              Models + corpus baked in at build time
 ```
 
 ---
@@ -398,6 +446,8 @@ tests/                  Offline test suite
 
 - Conversation memory and the embedded vector store live in one process; horizontal scaling needs Qdrant
   Cloud and an external checkpointer (LangGraph supports Postgres/Redis savers).
+- On the free deployment the knowledge base is fixed at build time: uploads work, but do not survive a
+  restart, and the instance sleeps when idle. Qdrant Cloud removes both limits.
 - `list_documents` aggregates by scrolling the collection: fine for hundreds of documents, not for millions.
 - OCR is plain Tesseract: dense tables in scans come out as prose, and non-English scans need extra language
   packs.
@@ -405,4 +455,5 @@ tests/                  Offline test suite
   claims it could not confirm rather than hiding them.
 - DuckDuckGo results without a key are best-effort and can be rate-limited; add a free Tavily key for
   reliable web fallback.
-- No authentication: add one before exposing an instance that accepts uploads publicly.
+- No authentication: the demo is open, so anyone with the link can upload documents and spend the Groq quota.
+  Add a key check before running an instance you care about.
