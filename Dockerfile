@@ -27,6 +27,13 @@ RUN python -c "from fastembed import TextEmbedding, SparseTextEmbedding; \
 TextEmbedding('BAAI/bge-small-en-v1.5', cache_dir='/app/models'); \
 SparseTextEmbedding('Qdrant/bm25', cache_dir='/app/models')"
 
+# Ingest the sample corpus at build time: the container starts ready, with no external
+# vector database and no parsing/OCR work at startup. Needs no API key.
+RUN python -c "from app.vectorstore import get_kb; from app.ingestion.pipeline import seed_directory; \
+kb = get_kb(); \
+[print(r.status, r.source, r.chunks, r.error or '') for r in seed_directory(kb, 'data/corpus')]; \
+print('chunks in collection:', kb.count())"
+
 # Hugging Face Spaces runs containers as uid 1000; keep writable dirs owned by that user.
 RUN useradd -m -u 1000 appuser && mkdir -p /app/storage && chown -R appuser /app
 USER appuser
