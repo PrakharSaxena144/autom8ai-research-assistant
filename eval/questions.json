@@ -1,0 +1,138 @@
+[
+  {
+    "id": "multihop-lidar-contract",
+    "category": "multi-hop",
+    "question": "The annual report names a single-sourced supplier for the Atlas lidar. Which company is that, where is it based, and when does its contract end?",
+    "reference": "Supplier SUP-117, Lumenar Optics GmbH, based in Austria; contract ends 2026-11-30. (Annual report gives only the code; the supplier register resolves it.)",
+    "must_include": [["Lumenar"], ["Austria"], ["2026-11-30", "30 November 2026", "November 30, 2026", "30.11.2026"]],
+    "expected_sources": ["supplier register", "Annual Report"],
+    "use_web": false
+  },
+  {
+    "id": "multihop-second-source",
+    "category": "multi-hop",
+    "question": "Is there an approved replacement for the only LX-9 lidar supplier yet, and when does the current supplier's contract run out?",
+    "reference": "A second source, SUP-241 Oriel Photonics Inc. (Canada), was approved for qualification by the board on 26 June 2025, target completion Q3 FY2026; until then SUP-117 remains the only approved supplier. SUP-117's contract ends 2026-11-30.",
+    "must_include": [["Oriel", "SUP-241"], ["Q3 FY2026"], ["2026-11-30", "30 November 2026", "November 30, 2026"]],
+    "expected_sources": ["board meeting minutes", "supplier register"],
+    "use_web": false
+  },
+  {
+    "id": "multihop-kestrel-single-source",
+    "category": "multi-hop",
+    "question": "Which single-sourced components does Kestrel depend on, and which of those suppliers has the earliest contract end date?",
+    "reference": "Kestrel depends on two single-sourced components: SWG-14 strain wave gearbox from Harmonic Joint Systems (contract end 2027-06-30) and MCB-3 motor controller board from Shenzhen Anlun Electronics (2026-12-31). Earliest: Shenzhen Anlun Electronics, 2026-12-31.",
+    "must_include": [["Harmonic Joint"], ["Anlun"], ["2026-12-31", "31 December 2026", "December 31, 2026"]],
+    "expected_sources": ["supplier register"],
+    "use_web": false
+  },
+  {
+    "id": "supersede-remote-engineering",
+    "category": "superseded policy",
+    "question": "How many days per week can someone in an engineering role work remotely?",
+    "reference": "3 days per week since 1 July 2025 (policy HR-07 v3.0 in the 2025 memo), replacing the handbook's 2 days for everyone.",
+    "must_include": [["3 days", "three days", "up to 3"]],
+    "expected_sources": ["Memo"],
+    "use_web": false
+  },
+  {
+    "id": "supersede-parental-leave",
+    "category": "superseded policy",
+    "question": "How many weeks of fully paid parental leave does a primary caregiver get?",
+    "reference": "20 weeks from 1 July 2025 (previously 16 weeks under the 2024 handbook).",
+    "must_include": [["20 weeks", "twenty weeks"]],
+    "expected_sources": ["Memo"],
+    "use_web": false
+  },
+  {
+    "id": "conflict-kestrel-ga",
+    "category": "conflicting dates",
+    "question": "When will Kestrel become generally available?",
+    "reference": "Q2 FY2027. The annual report planned FY2026, but the board moved GA to Q2 FY2027 on 26 June 2025 because the safety-rated speed and separation monitoring function is not ready.",
+    "must_include": [["Q2 FY2027"]],
+    "expected_sources": ["board meeting minutes"],
+    "use_web": false
+  },
+  {
+    "id": "ocr-incident-root-cause",
+    "category": "scanned document (OCR)",
+    "question": "What caused the lidar dropouts in incident IR-2025-031 and what fixed them?",
+    "reference": "Frost formed on the lidar window because firmware 4.2.0 only switched the window heater on below -20 C. Firmware 4.2.3 turns the heater on below +2 C.",
+    "must_include": [["frost"], ["heater"], ["4.2.3"]],
+    "expected_sources": ["Field Incident Report"],
+    "use_web": false
+  },
+  {
+    "id": "ocr-auditor",
+    "category": "scanned document (OCR)",
+    "question": "Which firm audited the FY2025 financial statements, who signed, and what opinion was given?",
+    "reference": "Keller & Brandt Wirtschaftspruefungsgesellschaft mbH, Hamburg; signed by Dr. Tobias Keller; unqualified opinion dated 12 June 2025.",
+    "must_include": [["Keller & Brandt", "Keller and Brandt", "Keller &amp; Brandt"], ["Tobias Keller"], ["unqualified"]],
+    "expected_sources": ["Annual Report"],
+    "use_web": false
+  },
+  {
+    "id": "calc-software-growth",
+    "category": "table arithmetic",
+    "question": "By how much did software and services revenue grow from FY2024 to FY2025, in EUR million and as a percentage?",
+    "reference": "From EUR 31.2m to 46.7m: +EUR 15.5m, about +49.7%.",
+    "must_include": [["15.5"], ["49.7", "49.68", "49,7", "~50%", "about 50%", "roughly 50%"]],
+    "expected_sources": ["Annual Report"],
+    "use_web": false
+  },
+  {
+    "id": "ambiguity-atlas-expenses",
+    "category": "ambiguous term",
+    "question": "How do I submit expenses in Atlas, and by when?",
+    "reference": "Atlas here is the internal HR portal (not the robot): submit expenses through the Atlas HR portal within 30 days, via single sign-on at hr.nimbus.internal.",
+    "must_include": [["portal"], ["30 days", "thirty days"]],
+    "expected_sources": ["Employee Handbook"],
+    "use_web": false
+  },
+  {
+    "id": "crossdoc-cold-storage",
+    "category": "cross-document",
+    "question": "Can an Atlas Cold Storage unit still on firmware 4.2.0 run in a -18 C freezer, and has the fix been rolled out?",
+    "reference": "No: CS units must run firmware 4.2.3 or later below -10 C (until 4.2.3 is installed they must not be operated below -10 C). 4.2.3 was released 3 March 2025 and reached 100% of Atlas CS units in the field by 15 June 2025.",
+    "must_include": [["4.2.3"], ["-10"], ["100%", "100 %", "all Atlas CS units", "all units"]],
+    "expected_sources": ["board meeting minutes"],
+    "use_web": false
+  },
+  {
+    "id": "compare-porter-atlas",
+    "category": "comparison",
+    "question": "Compare Porter and Atlas on payload, runtime per charge and warranty.",
+    "reference": "Porter: 400 kg, 10 h, 24-month warranty. Atlas: 700 kg, 8 h, 36-month warranty.",
+    "must_include": [["400 kg", "400kg"], ["700 kg", "700kg"], ["10 h", "10 hours", "10h"], ["8 h", "8 hours", "8h"], ["24"], ["36"]],
+    "expected_sources": ["Product specifications", "support faq"],
+    "use_web": false
+  },
+  {
+    "id": "followup-memory",
+    "category": "conversation memory",
+    "turns": ["Who supplies the LX-9 lidar?"],
+    "question": "When does their contract end?",
+    "reference": "Lumenar Optics GmbH (SUP-117); contract ends 2026-11-30.",
+    "must_include": [["2026-11-30", "30 November 2026", "November 30, 2026"]],
+    "expected_sources": ["supplier register"],
+    "use_web": false
+  },
+  {
+    "id": "unanswerable-ticker",
+    "category": "not in knowledge base",
+    "question": "What is Nimbus Robotics' stock exchange ticker symbol?",
+    "reference": "Not in the knowledge base (Nimbus Robotics is a GmbH; no ticker is mentioned). The assistant should say it could not find it rather than invent one.",
+    "expect_no_answer": true,
+    "expected_sources": [],
+    "use_web": false
+  },
+  {
+    "id": "web-iso-standard",
+    "category": "web fallback",
+    "question": "Atlas is certified to ISO 3691-4. What does that standard cover?",
+    "reference": "ISO 3691-4 specifies safety requirements for driverless industrial trucks (AGVs/AMRs) and their systems. Needs web evidence: the knowledge base only mentions the certification.",
+    "must_include": [["driverless"]],
+    "expected_sources": [],
+    "use_web": true
+  }
+]

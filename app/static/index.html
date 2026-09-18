@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef2ef;
+    --sheet: #fbfcfb;
+    --ink: #1f2a2e;
+    --muted: #5d6b6f;
+    --rule: #cbd5d0;
+    --accent: #2f6f73;
+    --accent-soft: #dde9e6;
+    --warn: #9a6516;
+    --bad: #9b3b2f;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--sans); }
+  a { color: var(--accent); }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .shell { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+  aside { border-right: 1px solid var(--rule); padding: 24px 20px; background: var(--paper); }
+  main { padding: 28px clamp(16px, 4vw, 56px) 80px; max-width: 980px; }
+
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 15px; font-weight: 600; margin: 28px 0 10px; }
+  .status { color: var(--muted); font-size: 13px; margin: 0; }
+  .status b { font-weight: 500; color: var(--ink); }
+
+  .doclist { list-style: none; margin: 0; padding: 0; font-size: 13.5px; }
+  .doclist li { padding: 7px 0; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 8px; }
+  .doclist .meta { color: var(--muted); white-space: nowrap; }
+  .empty { color: var(--muted); font-size: 13.5px; }
+
+  label.field { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  input[type=file] { font-size: 13px; width: 100%; }
+  textarea { width: 100%; border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px; padding: 8px 10px; resize: vertical; }
+  .btn { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+  .btn.secondary { background: transparent; color: var(--accent); }
+  .btn:disabled { opacity: .55; cursor: progress; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+  .note { font-size: 13px; color: var(--muted); }
+
+  .ask textarea { font-size: 17px; min-height: 76px; padding: 12px 14px; }
+  .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13.5px; color: var(--muted); }
+
+  .conversation { margin-top: 28px; display: grid; gap: 28px; }
+  .turn { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 22px 24px; }
+  .turn .q { font-weight: 500; margin: 0 0 4px; }
+  .turn .interp { color: var(--muted); font-size: 13.5px; margin: 0 0 14px; }
+  .answer { font-family: var(--serif); font-size: 18px; line-height: 1.6; max-width: 70ch; }
+  .answer p { margin: 0 0 .8em; }
+  .answer table { border-collapse: collapse; font-family: var(--sans); font-size: 14px; margin: 8px 0 14px; }
+  .answer th, .answer td { border-bottom: 1px solid var(--rule); padding: 5px 12px 5px 0; text-align: left; vertical-align: top; }
+  .answer sup a { font-family: var(--sans); font-size: 11px; text-decoration: none; background: var(--accent-soft); padding: 0 4px; border-radius: 3px; margin-left: 1px; }
+  .tablewrap { overflow-x: auto; }
+
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 0; font-size: 12.5px; }
+  .badge { border: 1px solid var(--rule); border-radius: 999px; padding: 1px 10px; color: var(--muted); }
+  .badge.low { color: var(--bad); border-color: currentColor; }
+  .badge.medium { color: var(--warn); border-color: currentColor; }
+  .badge.high { color: var(--accent); border-color: currentColor; }
+
+  details { margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 10px; }
+  summary { cursor: pointer; font-size: 14px; font-weight: 500; }
+
+  /* The reasoning trace: a real sequence, so it is numbered */
+  ol.trace { list-style: none; counter-reset: step; margin: 12px 0 0; padding: 0; position: relative; }
+  ol.trace::before { content: ""; position: absolute; left: 11px; top: 4px; bottom: 4px; width: 1px; background: var(--rule); }
+  ol.trace li { counter-increment: step; position: relative; padding: 0 0 12px 36px; font-size: 14px; }
+  ol.trace li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 23px; height: 23px; border-radius: 50%; background: var(--sheet); border: 1px solid var(--accent); color: var(--accent); font-size: 11.5px; display: grid; place-items: center; }
+  ol.trace li.web::before { border-color: var(--warn); color: var(--warn); }
+  ol.trace .kind { font-weight: 500; margin-right: 6px; }
+  ol.trace li.live { animation: arrive .25s ease-out; }
+  @keyframes arrive { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+  .subqs { margin: 10px 0 0; padding-left: 20px; font-size: 14px; }
+  .subqs li { margin-bottom: 6px; }
+  .subqs .st { color: var(--muted); }
+
+  ol.sources { margin: 10px 0 0; padding: 0; list-style: none; }
+  ol.sources li { padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 14px; scroll-margin-top: 20px; }
+  ol.sources li:target { background: var(--accent-soft); }
+  ol.sources .n { display: inline-block; min-width: 22px; font-weight: 600; color: var(--accent); }
+  ol.sources .where { color: var(--muted); }
+  ol.sources blockquote { margin: 6px 0 0 22px; color: var(--muted); font-size: 13.5px; }
+  .error { color: var(--bad); }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--rule); }
+  }
+  @media (prefers-reduced-motion: reduce) { ol.trace li.live { animation: none; } }
+  #docs li > span:first-child { flex: 1; }
+  #docs .remove { background: none; border: 0; padding: 2px 4px; color: var(--muted); font-size: .75rem; cursor: pointer; text-decoration: underline; }
+  #docs .remove:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <h1>Research assistant</h1>
+    <p class="status" id="status">Checking the server…</p>
+
+    <h2>Library</h2>
+    <ul class="doclist" id="docs"><li class="empty">Loading documents…</li></ul>
+
+    <h2>Add documents</h2>
+    <form id="upload">
+      <label class="field" for="files">Files (PDF, Word, HTML, text, CSV, JSON, images)</label>
+      <input id="files" type="file" multiple>
+      <label class="field" for="urls">Links, one per line</label>
+      <textarea id="urls" rows="2" placeholder="https://…"></textarea>
+      <div class="row"><button class="btn" type="submit" id="uploadBtn">Add to library</button></div>
+      <p class="note" id="uploadResult" aria-live="polite"></p>
+    </form>
+    <p class="note">API docs: <a href="/docs">/docs</a></p>
+  </aside>
+
+  <main>
+    <form class="ask" id="askForm">
+      <label class="field" for="question">Ask about the documents. Follow-up questions keep the context of this conversation.</label>
+      <textarea id="question" placeholder="Which country is the supplier of Atlas's lidar based in, and when does that contract end?"></textarea>
+      <div class="row">
+        <button class="btn" type="submit" id="askBtn">Ask</button>
+        <button class="btn secondary" type="button" id="naiveBtn" title="One retrieval and one LLM call, for comparison">Ask with naive retrieval</button>
+        <label class="check"><input type="checkbox" id="useWeb" checked> Search the web if the documents are not enough</label>
+        <button class="btn secondary" type="button" id="newConv">New conversation</button>
+      </div>
+    </form>
+    <div class="conversation" id="conversation"></div>
+  </main>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let conversationId = null;
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function inline(text, turnId) {
+  return esc(text)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(\d{1,3})\]/g, (_, n) => `<sup><a href="#${turnId}-src-${n}">${n}</a></sup>`);
+}
+
+function renderMarkdown(md, turnId) {
+  const blocks = String(md || "").trim().split(/\n\s*\n/);
+  return blocks.map(block => {
+    const lines = block.split("\n").filter(l => l.trim());
+    if (lines.length && lines.every(l => l.trim().startsWith("|"))) {
+      const rows = lines.filter(l => !/^\s*\|[\s:|-]+\|\s*$/.test(l))
+        .map(l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim()));
+      const [head, ...body] = rows;
+      return `<div class="tablewrap"><table><thead><tr>${head.map(c => `<th>${inline(c, turnId)}</th>`).join("")}</tr></thead><tbody>${
+        body.map(r => `<tr>${r.map(c => `<td>${inline(c, turnId)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    }
+    if (lines.length && lines.every(l => /^\s*([-*•]|\d+[.)])\s+/.test(l))) {
+      const ordered = /^\s*\d/.test(lines[0]);
+      const items = lines.map(l => `<li>${inline(l.replace(/^\s*([-*•]|\d+[.)])\s+/, ""), turnId)}</li>`).join("");
+      return ordered ? `<ol>${items}</ol>` : `<ul>${items}</ul>`;
+    }
+    if (lines.length === 1 && /^#{1,6}\s/.test(lines[0])) {
+      return `<p><strong>${inline(lines[0].replace(/^#+\s*/, ""), turnId)}</strong></p>`;
+    }
+    return `<p>${lines.map(l => inline(l, turnId)).join("<br>")}</p>`;
+  }).join("");
+}
+
+const STEP_NAMES = {
+  analyze: "Understand", plan_step: "Plan step", retrieve: "Search documents", grade: "Check evidence",
+  rewrite_query: "Search again", web_search: "Search the web", record_step: "Step result",
+  synthesize: "Write answer", verify: "Fact-check", plan_followups: "Fill gaps", no_answer: "No answer",
+  respond: "Reply", finalize: "Done", naive: "Naive baseline",
+};
+
+function traceItem(step, live) {
+  const li = document.createElement("li");
+  if (step.step === "web_search") li.className = "web";
+  if (live) li.classList.add("live");
+  li.innerHTML = `<span class="kind">${esc(STEP_NAMES[step.step] || step.step)}</span>${esc(step.detail)}`;
+  return li;
+}
+
+async function refreshHealth() {
+  try {
+    const h = await (await fetch("/health")).json();
+    const llm = h.llm_configured ? `<b>${esc(h.llm_models.main[0])}</b>` : `<b class="error">no GROQ_API_KEY</b>`;
+    $("status").innerHTML = `Model ${llm}. Vector store <b>${esc(h.vector_store || "starting")}</b>. Web search <b>${esc(h.web_search)}</b>. Startup: ${esc(h.seeding)}.`;
+    return h;
+  } catch { $("status").textContent = "Server not reachable."; }
+}
+
+async function refreshDocs() {
+  try {
+    const docs = await (await fetch("/documents")).json();
+    $("docs").innerHTML = docs.length
+      ? docs.map(d => `<li><span>${esc(d.title || d.source)}</span><span class="meta">${esc(d.file_type)}${d.ocr ? ", OCR" : ""}</span>` +
+          `<button class="remove" data-id="${esc(d.doc_id)}" title="Remove this document" aria-label="Remove ${esc(d.title || d.source)}">remove</button></li>`).join("")
+      : `<li class="empty">No documents yet. The sample corpus loads a minute after startup, or add your own.</li>`;
+  } catch { $("docs").innerHTML = `<li class="empty">Documents are not available while models load.</li>`; }
+}
+
+$("docs").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button.remove");
+  if (!btn) return;
+  btn.disabled = true;
+  try { await fetch(`/documents/${encodeURIComponent(btn.dataset.id)}`, { method: "DELETE" }); }
+  finally { refreshDocs(); }
+});
+
+$("upload").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData();
+  for (const f of $("files").files) fd.append("files", f);
+  const urls = $("urls").value.split(/\s+/).filter(Boolean);
+  urls.forEach(u => fd.append("urls", u));
+  if (!$("files").files.length && !urls.length) { $("uploadResult").textContent = "Choose a file or paste a link first."; return; }
+  $("uploadBtn").disabled = true; $("uploadResult").textContent = "Adding…";
+  try {
+    const r = await fetch("/documents", { method: "POST", body: fd });
+    const body = await r.json();
+    if (!r.ok) throw new Error(body.detail || r.statusText);
+    const failed = body.results.filter(x => x.status === "failed").map(x => `${x.source}: ${x.error}`);
+    $("uploadResult").textContent = `Added ${body.added}, already present ${body.duplicates}` + (failed.length ? `. Failed: ${failed.join("; ")}` : ".");
+    $("files").value = ""; $("urls").value = "";
+    refreshDocs();
+  } catch (err) { $("uploadResult").textContent = `Could not add documents: ${err.message}`; }
+  finally { $("uploadBtn").disabled = false; }
+});
+
+function newTurnCard(question, label) {
+  const id = "t" + Math.random().toString(36).slice(2, 8);
+  const card = document.createElement("section");
+  card.className = "turn"; card.id = id;
+  card.innerHTML = `
+    <p class="q">${esc(question)}${label ? ` <span class="badge">${esc(label)}</span>` : ""}</p>
+    <p class="interp"></p>
+    <div class="answer" aria-live="polite"><p class="note">Working…</p></div>
+    <div class="badges"></div>
+    <details open><summary>How this was answered</summary><ol class="trace"></ol></details>
+    <details class="subs" hidden><summary>Sub-questions</summary><ul class="subqs"></ul></details>
+    <details class="srcs" hidden open><summary>Sources</summary><ol class="sources"></ol></details>`;
+  $("conversation").prepend(card);
+  return card;
+}
+
+function renderFinal(card, res) {
+  const id = card.id;
+  if (res.standalone_question && res.standalone_question !== res.question) {
+    card.querySelector(".interp").textContent = `Interpreted as: ${res.standalone_question}`;
+  }
+  card.querySelector(".answer").innerHTML = renderMarkdown(res.answer, id);
+  const typeLabel = { answer: "Answer", clarification: "Needs clarification", direct: "Reply", not_found: "Not found" }[res.answer_type] || res.answer_type;
+  const grounding = { knowledge_base: "From the documents", web: "From the web", mixed: "Documents and web", none: "No sources" }[res.grounding] || res.grounding;
+  card.querySelector(".badges").innerHTML =
+    `<span class="badge">${esc(typeLabel)}</span><span class="badge ${esc(res.confidence)}">Confidence ${esc(res.confidence)}</span><span class="badge">${esc(grounding)}</span>` +
+    (res.assumptions ? `<span class="badge">Assumed: ${esc(res.assumptions)}</span>` : "");
+  const trace = card.querySelector(".trace");
+  if (!trace.children.length) res.reasoning_trace.forEach(s => trace.append(traceItem(s, false)));
+  if (res.sub_questions.length) {
+    const subs = card.querySelector(".subs"); subs.hidden = false;
+    subs.querySelector(".subqs").innerHTML = res.sub_questions.map(s =>
+      `<li>${esc(s.question)} <span class="st">(${esc(s.status.replace("_", " "))}${s.used_web ? ", web" : ""})</span>${s.finding ? `<br><span class="st">${esc(s.finding)}</span>` : ""}</li>`).join("");
+  }
+  if (res.sources.length) {
+    const srcs = card.querySelector(".srcs"); srcs.hidden = false;
+    srcs.querySelector(".sources").innerHTML = res.sources.map(s => {
+      const where = [s.section, s.page ? `page ${s.page}` : null].filter(Boolean).join(", ");
+      const name = s.type === "web" ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a> (web)` : esc(s.title || s.source);
+      return `<li id="${id}-src-${s.n}"><span class="n">${s.n}</span>${name}${where ? ` <span class="where">${esc(where)}</span>` : ""}<blockquote>${esc(s.snippet)}</blockquote></li>`;
+    }).join("");
+  }
+}
+
+async function ask(mode) {
+  const question = $("question").value.trim();
+  if (!question) { $("question").focus(); return; }
+  $("askBtn").disabled = $("naiveBtn").disabled = true;
+  const card = newTurnCard(question, mode === "naive" ? "naive baseline" : "");
+  const payload = { question, conversation_id: conversationId, use_web: $("useWeb").checked, mode };
+  try {
+    if (mode === "naive") {
+      const r = await fetch("/ask", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.detail || r.statusText);
+      renderFinal(card, body);
+      $("question").value = "";
+    } else {
+      const r = await fetch("/ask/stream", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!r.ok) { const b = await r.json().catch(() => ({})); throw new Error(b.detail || r.statusText); }
+      const reader = r.body.getReader(); const decoder = new TextDecoder(); let buf = "";
+      const trace = card.querySelector(".trace");
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf("\n")) >= 0) {
+          const line = buf.slice(0, nl).trim(); buf = buf.slice(nl + 1);
+          if (!line) continue;
+          const ev = JSON.parse(line);
+          if (ev.event === "step") trace.append(traceItem(ev, true));
+          else if (ev.event === "final") { conversationId = ev.response.conversation_id; renderFinal(card, ev.response); $("question").value = ""; }
+          else if (ev.event === "error") throw new Error(ev.detail);
+        }
+      }
+    }
+  } catch (err) {
+    card.querySelector(".answer").innerHTML = `<p class="error">The request failed: ${esc(err.message)}</p>`;
+  } finally { $("askBtn").disabled = $("naiveBtn").disabled = false; }
+}
+
+$("askForm").addEventListener("submit", (e) => { e.preventDefault(); ask("agent"); });
+$("naiveBtn").addEventListener("click", () => ask("naive"));
+$("question").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) ask("agent"); });
+$("newConv").addEventListener("click", () => { conversationId = null; $("conversation").innerHTML = ""; $("question").focus(); });
+
+refreshHealth().then(refreshDocs);
+setInterval(() => { refreshHealth(); refreshDocs(); }, 15000);
+</script>
+</body>
+</html>

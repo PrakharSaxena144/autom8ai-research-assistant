@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# tests
+pytest>=8.0
+
+# only needed to regenerate data/corpus (python scripts/generate_corpus.py)
+reportlab>=4.0

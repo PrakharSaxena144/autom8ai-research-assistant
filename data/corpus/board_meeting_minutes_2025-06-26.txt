@@ -1,0 +1,34 @@
+NIMBUS ROBOTICS GMBH
+SUPERVISORY BOARD MEETING - MINUTES (EXTRACT)
+Date: 26 June 2025, Berlin
+Present: H. Brandauer (Chair), M. Okafor (CEO), J. Weller (CFO), P. Deshmukh (CTO), 3 further board members
+
+1. FY2025 CLOSING AND AUDIT
+The CFO presented the audited FY2025 accounts. The auditor issued an unqualified opinion on 12 June 2025.
+The board approved the accounts. No dividend will be paid; profits are retained for growth.
+
+2. Q1 FY2026 TRADING UPDATE
+Q1 FY2026 (April to June 2025) revenue is tracking at EUR 61.3m, slightly above plan.
+Atlas order intake is strong in cold-chain logistics. Porter demand is flat in EMEA.
+
+3. SUPPLY CHAIN: LX-9 LIDAR SECOND SOURCE
+Following the risk discussion in the annual report, the board approved the qualification of a second
+source for the LX-9 lidar: supplier reference SUP-241, Oriel Photonics Inc. (Canada).
+Qualification budget EUR 1.2m. Target completion: Q3 FY2026. Until qualification is complete,
+SUP-117 remains the only approved LX-9 supplier.
+Note: SUP-241 is not yet in the supplier register, which is updated after qualification.
+
+4. KESTREL LAUNCH
+The CTO reported that Kestrel pilot customers require a certified safety-rated speed and separation
+monitoring function that is not ready. The board accepted the recommendation to move Kestrel general
+availability from FY2026 to Q2 FY2027. Pilot installations continue.
+
+5. HEADCOUNT
+The board approved 40 additional engineering hires in Pune during FY2026, mainly for Fleet Console and
+Kestrel software. Austin field service headcount remains unchanged.
+
+6. INCIDENT FOLLOW-UP
+The CTO confirmed that firmware 4.2.3 (fix for IR-2025-031) has been rolled out to 100% of Atlas CS units
+in the field as of 15 June 2025. No recurrence reported.
+
+Next meeting: 25 September 2025.

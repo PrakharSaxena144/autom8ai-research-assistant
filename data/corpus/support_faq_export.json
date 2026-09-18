@@ -1,0 +1,36 @@
+{
+  "exported_from": "Nimbus Help Centre",
+  "exported_at": "2025-07-02",
+  "articles": [
+    {
+      "id": "KB-101",
+      "question": "What warranty comes with Nimbus robots?",
+      "answer": "Porter has a 24-month warranty, Atlas has a 36-month warranty and Kestrel pilot units have a 12-month warranty. Batteries are covered for 5 years or 3,000 full charge cycles, whichever comes first."
+    },
+    {
+      "id": "KB-102",
+      "question": "What support plans are available?",
+      "answer": "Standard support is included with every robot: business-hours support and a response within 2 business days. Priority support costs EUR 1,900 per robot per year and adds 24/7 support, a 4-hour response time and next-business-day spare parts in the EU and USA."
+    },
+    {
+      "id": "KB-103",
+      "question": "How do I update robot firmware?",
+      "answer": "Firmware updates are pushed from Nimbus Fleet Console. Open Fleet > Updates, choose the release and schedule a staged rollout. Robots install updates while docked on a charger."
+    },
+    {
+      "id": "KB-104",
+      "question": "How much does Fleet Console cost?",
+      "answer": "Fleet Console Essentials is included for the first year. After that it costs EUR 900 per robot per year. Fleet Console Analytics, with throughput dashboards and heatmaps, costs EUR 1,400 per robot per year."
+    },
+    {
+      "id": "KB-105",
+      "question": "Can Porter be used in cold storage?",
+      "answer": "No. Porter is rated for 0 to 45 degrees C. For freezer and chilled environments use the Atlas Cold Storage variant."
+    },
+    {
+      "id": "KB-106",
+      "question": "How do I request a refurbished robot?",
+      "answer": "Refurbished Porter units are available in North America from our Austin refurbishment line with a 12-month warranty. Contact your account manager."
+    }
+  ]
+}
