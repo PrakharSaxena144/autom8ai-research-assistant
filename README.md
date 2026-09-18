@@ -10,6 +10,8 @@ pinned: false
 
 # Multi-Step Research Assistant
 
+Deployment link: https://autom8ai-research-assistant.onrender.com/
+
 A research assistant over a private document knowledge base. It plans, retrieves, checks its own
 evidence, searches the web when the documents fall short, writes a cited answer, and then fact-checks
 that answer before returning it. FastAPI backend, LangGraph agent, hybrid Qdrant retrieval, and a
